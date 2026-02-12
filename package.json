@@ -10,6 +10,7 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
+  "module": "module",
   "packageManager": "pnpm@10.29.3",
   "devDependencies": {
     "@types/node": "^25.2.3",
