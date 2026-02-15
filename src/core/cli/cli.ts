@@ -1,47 +1,47 @@
-import { parseArguments } from "./parseArguments";
+import { parseArguments, ParsedArgs } from "./parseArguments";
 import Command from "./command";
 
 
 export default class CLI {
-    private args: string[];
-    private commands: Command[] = [];
-
-    constructor(args: string[]) {
-        this.args = args.slice(2);
-       
-    }
+    private commands: Map<string, Command> = new Map();
 
     registerCommand(name: string, description: string) {
         const newCommand = new Command(name, description);
-        this.commands.push(newCommand);
+        this.commands.set(name, newCommand);
         return newCommand
     }
 
-    run() {
-        const parsedArgs = parseArguments(this.args);
-        let command: Command;
-
-        for(const cmd of this.commands) {
-            if(cmd.getName.toLowerCase() == parsedArgs.subcommand.toLowerCase()) {
-                command = cmd;
-                break;
-            }
+    run(argv: string[]) {
+        const parsed: ParsedArgs= parseArguments(argv);
+        if(!parsed.command) {
+            this.help();
+            return;
         }
+
+        const command: Command = this.commands.get(parsed.command);
 
         if(!command) {
             this.help();
             return
         }
 
-        command.setOptions(parsedArgs);
-        command.execute();
+        if(parsed.positionals[0] === "help") {
+            command.help();
+            return;
+        }
+        
+        try {
+            command.execute(parsed);       
+        } catch(error) {
+            console.error(error.message + "\n");
+        }
     }
 
     private help() {
         console.log("Usage: <SUBCOMMAND> [OPTIONS]\n");
         console.log("Commands");
-        for(const cmd of this.commands) {
-            console.log(`\t${cmd.getName}\t\t${cmd.getDescription}`)
+        for(const cmd of this.commands.values()) {
+            console.log(`\t${cmd.getName()}\t\t${cmd.getDescription()}`)
         }
     }
 }

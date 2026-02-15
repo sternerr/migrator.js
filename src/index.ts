@@ -2,38 +2,43 @@ import CLI from "./core/cli/cli";
 import Migrator from "./core/migrator/migrator";
 
 async function main() {
-    const cli = new CLI(process.argv);
+    const cli = new CLI();
 
     cli.registerCommand("create", "Creates a migration file")
-        .setOption("--filename", "")
-        .setHandler((args: any) => {
+        .setOption("--filename", { description: "", type: "string", default: ""})
+        .setHandler((args: {options: Record<string, string | boolean>, positionals: Record<string, string>}) => {
             const migrator = new Migrator();
-            migrator.create(args);
-        });
+
+            if(args.options["--filename"]) {
+                migrator.create(args.options["--filename"] as string);
+            } else {
+                migrator.create();
+            }
+        })
     
     cli.registerCommand("up", "Migrates up one step")
-        .setOption("--connection-string", "")
-        .setHandler((args: any) => {
-            if(!args["--connection-string"].value) {
+        .setOption("--connection-string", {description: "", type: "string", required: true})
+        .setHandler((args: {options: Record<string, string | boolean>, positionals: Record<string, string>}) => {
+            if(!args.options["--connection-string"]) {
                 return;
             }
 
-            const migrator = new Migrator(args["--connection-string"].value);
-            migrator.up(args);
+            const migrator = new Migrator(args.options["--connection-string"] as string);
+            migrator.up();
         });
 
     cli.registerCommand("down", "Migrates down one step")
-        .setOption("--connection-string", "")
-        .setHandler((args: any) => {
-            if(!args["--connection-string"].value) {
+        .setOption("--connection-string", {description: "", type: "string", required: true})
+        .setHandler((args: {options: Record<string, string | boolean>, positionals: Record<string, string>}) => {
+            if(!args.options["--connection-string"]) {
                 return;
             }
 
-            const migrator = new Migrator(args["--connection-string"].value);
-            migrator.down(args);
+            const migrator = new Migrator(args.options["--connection-string"] as string);
+            migrator.down();
         });
 
-    cli.run();
+    cli.run(process.argv.slice(2));
 }
 
 main();

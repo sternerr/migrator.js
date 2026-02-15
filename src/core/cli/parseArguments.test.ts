@@ -8,36 +8,49 @@ describe("argument parser", () => {
             {
                 data: ["--help"],
                 expected: {
-                    subcommand: "",
+                    command: "",
                     options: { "--help": true },
+                    positionals: []
                 }
             },
             {
                 data: ["subcommand"],
                 expected: {
-                    subcommand: "subcommand",
+                    command: "subcommand",
                     options: {},
+                    positionals: []
                 }
             },
             {
                 data: ["subcommand", "--help"],
                 expected: {
-                    subcommand: "subcommand",
-                    options: { "--help": true }
+                    command: "subcommand",
+                    options: { "--help": true },
+                    positionals: []
                 }
             },
             {
                 data: ["subcommand", "--flag=data", "-f", "data"],
                 expected: {
-                    subcommand: "subcommand",
+                    command: "subcommand",
                     options: { "--flag": "data", "-f": "data" },
+                    positionals: []
                 }
             },
             {
                 data: ["subcommand", "-h", "-f", "data"],
                 expected: {
-                    subcommand: "subcommand",
+                    command: "subcommand",
                     options: { "-h": true, "-f": "data" },
+                    positionals: []
+                }
+            },
+            {
+                data: ["subcommand", "awd", "-h", "-f", "data"],
+                expected: {
+                    command: "subcommand",
+                    options: { "-h": true, "-f": "data" },
+                    positionals: ["awd"]
                 }
             },
         ];
@@ -54,7 +67,7 @@ describe("argument parser", () => {
 });
 
 function areParsedArgsEqual(a: ParsedArgs, b: ParsedArgs): boolean {
-    if (a.subcommand !== b.subcommand) return false;
+    if (a.command !== b.command) return false;
 
     const aKeys = Object.keys(a.options);
     const bKeys = Object.keys(b.options);

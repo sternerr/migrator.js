@@ -13,7 +13,7 @@ export default class Migrator {
         this.client = new Client({connectionString});
     }
 
-    create(args: any) {
+    create(name: string = "") {
         try {
             const stat = fs.lstatSync(this.migrationDir);
         } catch(error) {
@@ -21,14 +21,14 @@ export default class Migrator {
         }
 
         const timestamp = Date.now();
-        const filename = `${timestamp}${args["--filename"].value ? "_" + args["--filename"].value : ""}.sql`;
+        const filename = `${timestamp}${name ? "_" + name : ""}.sql`;
         const filepath = path.join(this.migrationDir, filename);
 
         fs.writeFileSync(filepath, "");
         console.log("Created:", filename);
     }
 
-    async up(args: any) {
+    async up() {
         await this.client.connect();
         const files = fs.readdirSync(this.migrationDir);
 
@@ -90,7 +90,7 @@ export default class Migrator {
         await this.client.end();
     }
 
-    async down(args: any) {
+    async down() {
         await this.client.connect();
 
         if(await this.existMigrationTable()) {
