@@ -10,6 +10,28 @@ async function main() {
             const migrator = new Migrator();
             migrator.create(args);
         });
+    
+    cli.registerCommand("up", "Migrates up one step")
+        .setOption("--connection-string", "")
+        .setHandler((args: any) => {
+            if(!args["--connection-string"].value) {
+                return;
+            }
+
+            const migrator = new Migrator(args["--connection-string"].value);
+            migrator.up(args);
+        });
+
+    cli.registerCommand("down", "Migrates down one step")
+        .setOption("--connection-string", "")
+        .setHandler((args: any) => {
+            if(!args["--connection-string"].value) {
+                return;
+            }
+
+            const migrator = new Migrator(args["--connection-string"].value);
+            migrator.down(args);
+        });
 
     cli.run();
 }

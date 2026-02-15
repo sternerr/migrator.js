@@ -47,7 +47,6 @@ export default function parseSqlStatements(buffer: Buffer): ParsedSqlStatements 
         
         currentStmt += char;
         if(char === ";" && !isInsideDoubleQuotes && !isInsideSingleQuotes && !isInsideLineComment) {
-            console.log(currentStmtSection);
             if(currentStmtSection === "up") {
                 stmts.up.push(currentStmt.trim());
             } else if(currentStmtSection === "down") {

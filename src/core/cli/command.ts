@@ -25,8 +25,6 @@ export default class Command {
 
     setOptions(args: ParsedArgs) {
         for(const [key, value] of Object.entries(args.options)) {
-            console.log(key, this.options)
-
             if(key in this.options) {
                 this.options[key].value = value;
             }
