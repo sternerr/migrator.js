@@ -32,7 +32,7 @@ export default class CLI {
             this.help();
             return
         }
-        
+
         command.setOptions(parsedArgs);
         command.execute();
     }
@@ -41,7 +41,7 @@ export default class CLI {
         console.log("Usage: <SUBCOMMAND> [OPTIONS]\n");
         console.log("Commands");
         for(const cmd of this.commands) {
-            console.log(`${cmd.getName}\t${cmd.getDescription}`)
+            console.log(`\t${cmd.getName}\t\t${cmd.getDescription}`)
         }
     }
 }
