@@ -4,9 +4,11 @@ import { Client } from "pg";
 import { error } from "node:console";
 import parseSqlStatements from "../parser/parser";
 import { buffer } from "node:stream/consumers";
+import FileManager from "./FileManager";
 
 export default class Migrator {
     private migrationDir: string = path.join(process.cwd(), "migrations");
+    private fileManager: FileManager = new FileManager();
     private client: Client;
     
     constructor(connectionString: string = "") {
@@ -14,23 +16,17 @@ export default class Migrator {
     }
 
     create(name: string = "") {
-        try {
-            const stat = fs.lstatSync(this.migrationDir);
-        } catch(error) {
-            fs.mkdirSync(this.migrationDir);
-        }
-
         const timestamp = Date.now();
         const filename = `${timestamp}${name ? "_" + name : ""}.sql`;
         const filepath = path.join(this.migrationDir, filename);
 
-        fs.writeFileSync(filepath, "");
+        this.fileManager.writeFile(filepath, "");
         console.log("Created:", filename);
     }
 
     async up() {
         await this.client.connect();
-        const files = fs.readdirSync(this.migrationDir);
+        const files = this.fileManager.getFiles(this.migrationDir).sort()
 
         if(!await this.existMigrationTable()) {
             try {
@@ -41,7 +37,7 @@ export default class Migrator {
                 
            
 
-                const buffer = fs.readFileSync(path.join(this.migrationDir, files[0]));
+                const buffer = this.fileManager.readFile(this.migrationDir, files[0]);
                 const sqlStmts = parseSqlStatements(buffer);
                 
                 for(const stmt of sqlStmts.up) {
@@ -58,7 +54,7 @@ export default class Migrator {
         } else {
             const result = await this.client.query("SELECT name, MAX(created_at) FROM migrations GROUP BY name;");
             if(result.rowCount === 0) {
-                const buffer = fs.readFileSync(path.join(this.migrationDir, files[0]));
+                const buffer = this.fileManager.readFile(this.migrationDir, files[0]);
                 const sqlStmts = parseSqlStatements(buffer);
                 
                 for(const stmt of sqlStmts.up) {
@@ -74,7 +70,7 @@ export default class Migrator {
 
             for(let i = 0; i < files.length; i++) {
                 if(result.rows[0].name === files[i] && files[i+1]) {      
-                    const buffer = fs.readFileSync(path.join(this.migrationDir, files[i+1]));
+                    const buffer = this.fileManager.readFile(this.migrationDir, files[i+1]);
                     const sqlStmts = parseSqlStatements(buffer);
                     
                     for(const stmt of sqlStmts.up) {
@@ -100,7 +96,7 @@ export default class Migrator {
                 return;
             }
 
-            const buffer = fs.readFileSync(path.join(this.migrationDir, result.rows[0].name));
+            const buffer = this.fileManager.readFile(this.migrationDir, result.rows[0].name);
             const sqlStmts = parseSqlStatements(buffer);
                     
             for(const stmt of sqlStmts.down) {
